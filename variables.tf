@@ -1,4 +1,11 @@
-variable "workload_name" {}
+variable "resource_groups" {
+  type        = map(string)
+  description = "The resource groups to deploy"
+}
+
+variable "workload_name" {
+  type = string
+}
 
 variable "region" {
   type        = string

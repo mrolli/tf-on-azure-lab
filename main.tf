@@ -15,15 +15,10 @@ provider "azurerm" {
 }
 
 # Create the very first resource
-resource "azurerm_resource_group" "lab-test" {
-  name     = "rg-${var.workload_name}-test"
+resource "azurerm_resource_group" "lab" {
+  for_each = var.resource_groups
+
+  name     = each.value
   location = var.region
   tags     = var.tags
-}
-
-# Create the very first resource
-resource "azurerm_resource_group" "lab-prod" {
-  name     = "rg-${var.workload_name}-prod"
-  location = var.region
-  tags     = merge(var.tags, { Environment = "prod" })
 }
