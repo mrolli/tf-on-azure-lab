@@ -14,27 +14,16 @@ provider "azurerm" {
   features {}
 }
 
-locals {
-  workload_name = "lab-mr"
-  region        = "switzerlandnorth"
-  tags = {
-    Environment = "test"
-    ManagedBy   = "terraform"
-  }
-}
-
 # Create the very first resource
 resource "azurerm_resource_group" "lab-test" {
-  name     = "rg-${local.workload_name}-test"
-  location = local.region
-
-  tags = local.tags
+  name     = "rg-${var.workload_name}-test"
+  location = var.region
+  tags     = var.tags
 }
 
 # Create the very first resource
 resource "azurerm_resource_group" "lab-prod" {
-  name     = "rg-${local.workload_name}-prod"
-  location = local.region
-
-  tags = merge(local.tags, { Environment = "prod" })
+  name     = "rg-${var.workload_name}-prod"
+  location = var.region
+  tags     = merge(var.tags, { Environment = "prod" })
 }
