@@ -14,41 +14,27 @@ provider "azurerm" {
   features {}
 }
 
-locals {
-  subnets = { for subnet in flatten([
-    for virtual_network_key, virtual_network_value in var.virtual_networks : [
-      for subnet_key, subnet_value in virtual_network_value.subnets : {
-        composite_key        = "${virtual_network_key}-${subnet_key}"
-        name                 = subnet_value.name == null ? "${virtual_network_value.name}-${subnet_key}" : subnet_value.name
-        address_prefix       = subnet_value.address_prefix
-        resource_group_name  = azurerm_resource_group.lab[virtual_network_value.resource_group_key].name
-        virtual_network_name = azurerm_virtual_network.lab[virtual_network_key].name
-      }
-    ]
-  ]) : subnet.composite_key => subnet }
+module "lab" {
+  source = "./modules/lab"
+
+  workload_name    = var.workload_name
+  region           = var.region
+  resource_groups  = var.resource_groups
+  virtual_networks = var.virtual_networks
+  tags             = var.tags
 }
 
-# Create the very first resource
-resource "azurerm_resource_group" "lab" {
-  for_each = var.resource_groups
-
-  name     = each.value
-  location = var.region
-  tags     = var.tags
+moved {
+  from = azurerm_resource_group.lab
+  to   = module.lab.azurerm_resource_group.lab
 }
 
-resource "azurerm_virtual_network" "lab" {
-  for_each            = var.virtual_networks
-  name                = each.value.name
-  address_space       = each.value.address_space
-  location            = var.region
-  resource_group_name = azurerm_resource_group.lab[each.value.resource_group_key].name
+moved {
+  from = azurerm_virtual_network.lab
+  to   = module.lab.azurerm_virtual_network.lab
 }
 
-resource "azurerm_subnet" "lab" {
-  for_each             = local.subnets
-  name                 = each.value.name
-  resource_group_name  = each.value.resource_group_name
-  virtual_network_name = each.value.virtual_network_name
-  address_prefixes     = [each.value.address_prefix]
+moved {
+  from = azurerm_subnet.lab
+  to   = module.lab.azurerm_subnet.lab
 }
